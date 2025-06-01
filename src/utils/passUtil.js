@@ -1,0 +1,1 @@
+exports.validatePassword = (pw) => pw.length >= 6;
