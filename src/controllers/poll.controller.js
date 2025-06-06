@@ -49,18 +49,24 @@ const createPoll = async (req, res, next) => {
   try {
     const { title, description, options, expiresAt } = req.body;
 
-    if (!options || options.length < 2) {
+    if (!options || !Array.isArray(options) || options.length < 2) {
       return res.status(400).json(
         ApiResponse.error('Please provide at least 2 options')
       );
     }
 
+    const formattedOptions = options.map(opt => ({
+      text: typeof opt === 'string' ? opt : opt.text,
+      votes: [],
+      voteCount: 0
+    }));
+
     const poll = await Poll.create({
       title,
       description,
       creator: req.user.id,
-      options: options.map(opt => ({ text: opt })),
-      expiresAt
+      options: formattedOptions,
+      expiresAt: expiresAt ? new Date(expiresAt) : undefined
     });
 
     res.status(201).json(

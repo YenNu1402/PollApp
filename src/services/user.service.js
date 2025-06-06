@@ -141,7 +141,7 @@ class UserService {
 
   async getMyProfile(userId) {
     try {
-      const user = await this.user.findById(userId).select('-password -refreshToken -otp -expiredOtp');
+      const user = await this.user.findById(userId).select('-password -otp -expiredOtp');
       if (!user) {
         throw new Error("User profile not found");
       }
@@ -154,10 +154,10 @@ class UserService {
   async updateMyProfile(userId, updateData) {
     try {
       //Ngăn không cho update các trường bí mật
-      const disallowedFields = ['password', 'role', '_id', 'refreshToken', 'otp', 'expiredOtp'];
+      const disallowedFields = ['password', 'role', '_id', 'otp', 'expiredOtp'];
       disallowedFields.forEach(field => delete updateData[field]);
 
-      const updatedUser = await this.user.findByIdAndUpdate(userId, updateData, { new: true, runValidators: true }).select('-password -refreshToken -otp -expiredOtp');
+      const updatedUser = await this.user.findByIdAndUpdate(userId, updateData, { new: true, runValidators: true }).select('-password -otp -expiredOtp');
       if (!updatedUser) {
         throw new Error("User not found or update failed");
       }
@@ -171,7 +171,7 @@ class UserService {
   async getAllUsers(page = 1, limit = 10) {
     try {
       const skip = (page - 1) * limit;
-      const users = await this.user.find().select('-password -refreshToken -otp -expiredOtp').skip(skip).limit(Number(limit));
+      const users = await this.user.find().select('-password -otp -expiredOtp').skip(skip).limit(Number(limit));
       const totalUsers = await this.user.countDocuments();
       return { users, totalUsers, page: Number(page), limit: Number(limit) };
     } catch (err) {
@@ -181,7 +181,7 @@ class UserService {
 
   async getUserById(id) {
     try {
-      const user = await this.user.findById(id).select('-password -refreshToken -otp -expiredOtp');
+      const user = await this.user.findById(id).select('-password -otp -expiredOtp');
       if (!user) {
         throw new Error("User not found");
       }

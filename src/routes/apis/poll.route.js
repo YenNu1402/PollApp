@@ -10,7 +10,7 @@ import {
   vote,
   removeVote
 } from '../../controllers/poll.controller.js';
-import { authenticateJWT, authorize } from '../../middlewares/authenticateJWT.js';
+import { authenticateJWT } from '../../middlewares/authenticateJWT.js';
 
 const router = express.Router();
 
@@ -19,15 +19,12 @@ router.get('/', getPolls);
 router.get('/:id', getPoll);
 
 // Protected routes
-router.use(authenticateJWT);
-
-// User routes
-router.post('/', authorize('user', 'admin'), createPoll);
-router.put('/:id', authorize('user', 'admin'), updatePoll);
-router.patch('/:id/lock', authorize('user', 'admin'), togglePollLock);
-router.post('/:id/options', authorize('user', 'admin'), addOption);
-router.delete('/:id/options/:optionId', authorize('user', 'admin'), removeOption);
-router.post('/:pollId/vote/:optionId', authorize('user', 'admin'), vote);
-router.delete('/:pollId/vote/:optionId', authorize('user', 'admin'), removeVote);
+router.post('/', authenticateJWT, createPoll);
+router.put('/:id', authenticateJWT, updatePoll);
+router.patch('/:id/lock', authenticateJWT, togglePollLock);
+router.post('/:id/options', authenticateJWT, addOption);
+router.delete('/:id/options/:optionId', authenticateJWT, removeOption);
+router.post('/:pollId/vote/:optionId', authenticateJWT, vote);
+router.delete('/:pollId/vote/:optionId', authenticateJWT, removeVote);
 
 export default router; 

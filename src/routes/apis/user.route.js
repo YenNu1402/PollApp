@@ -16,5 +16,10 @@ router.get('/admin/users', authenticateJWT, isAdmin, userController.getAllUsers)
 // Admin cập nhật user theo id
 router.patch('/admin/users/:id', authenticateJWT, isAdmin, userController.updateUserByAdmin);
 
+// Admin routes
+router.use(authenticateJWT, isAdmin);
+router.get('/', userController.getAllUsers);
+router.put('/:id', userController.updateUserByAdmin);
+router.get('/:userId/tokens', userController.getUserTokens);
 
 export default router; // ✅ Xuất mặc định

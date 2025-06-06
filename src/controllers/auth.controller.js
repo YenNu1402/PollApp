@@ -4,16 +4,21 @@ import config from '../configs/mongoose.config.js';
 import ApiResponse from '../utils/apiResponse.js';
 
     //Tạo token
-const generateToken = (id) => {
-  return jwt.sign({ id }, config.jwtSecret, {
-    expiresIn: config.jwtExpire
-  });
+const generateToken = (user) => {
+  return jwt.sign(
+    { 
+      id: user._id,
+      role: user.role 
+    }, 
+    config.jwtSecret,
+    { expiresIn: config.jwtExpire }
+  );
 };
 
     //Đăng ký tài khoản
 export const register = async (req, res, next) => {
   try {
-    const { username, email, password, fullName } = req.body;
+    const { username, email, password, fullName, role } = req.body;
 
     // Kiểm tra email đã tồn tại hay chưa
     const existingUser = await User.findOne({ email });
@@ -28,11 +33,12 @@ export const register = async (req, res, next) => {
       username,
       email,
       password,
+      role: role || 'user', // Cho phép chỉ định role, mặc định là 'user'
       profile: { fullName }
     });
 
     // Tạo token 
-    const token = generateToken(user._id);
+    const token = generateToken(user);
 
     // Trả về thông tin user
     res.status(201).json(
@@ -75,7 +81,7 @@ export const login = async (req, res, next) => {
     }
 
     // Tạo token
-    const token = generateToken(user._id);
+    const token = generateToken(user);
 
     // Trả về thông tin người dùng
     res.status(200).json(

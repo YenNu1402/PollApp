@@ -2,12 +2,6 @@ import User from '../models/user.model.js';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 
-const newUser = new User({
-  username: 'nam123',
-  email: 'nam@example.com',
-  password: 'matkhau123' // sẽ được hash nếu dùng middleware `.pre('save')`
-});
-
 // Đăng ký tài khoản
 const register = async (req, res) => {
   try {
@@ -107,7 +101,7 @@ const getProfile = async (req, res) => {
 // Cập nhật thông tin user
 const updateProfile = async (req, res) => {
   try {
-    const disallowedFields = ['password', 'role', '_id', 'refreshToken'];
+    const disallowedFields = ['password', 'role', '_id'];
     disallowedFields.forEach(field => delete req.body[field]);
 
     const updated = await User.findByIdAndUpdate(
@@ -127,7 +121,7 @@ const updateProfile = async (req, res) => {
 // Lấy danh sách tất cả user (admin)
 const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find().select('-password -refreshToken');
+    const users = await User.find().select('-password');
     res.json({ success: true, data: users });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Failed to get users' });
@@ -138,7 +132,7 @@ const getAllUsers = async (req, res) => {
 const updateUserByAdmin = async (req, res) => {
   try {
     const { id } = req.params;
-    const updatedUser = await User.findByIdAndUpdate(id, req.body, { new: true }).select('-password -refreshToken');
+    const updatedUser = await User.findByIdAndUpdate(id, req.body, { new: true }).select('-password');
     if (!updatedUser) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
@@ -148,7 +142,25 @@ const updateUserByAdmin = async (req, res) => {
   }
 };
 
-await newUser.save();
+// Admin xem thông tin refreshToken đầy đủ
+const getUserTokens = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findById(userId).select('email refreshToken');
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    res.json({ 
+      success: true, 
+      data: {
+        email: user.email,
+        refreshToken: user.refreshToken
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to get user tokens' });
+  }
+};
 
 // Xuất tất cả các hàm
 export {
@@ -159,5 +171,6 @@ export {
   getProfile,
   updateProfile,
   getAllUsers,
-  updateUserByAdmin
+  updateUserByAdmin,
+  getUserTokens
 };

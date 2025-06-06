@@ -2,7 +2,7 @@ import ApiResponse from '../utils/apiResponse.js';
 
 // Validate đăng ký tài khoản
 export const validateRegister = (req, res, next) => {
-  const { username, email, password, fullName } = req.body;
+  const { username, email, password, fullName, role } = req.body;
 
   // Validate username
   if (!username || username.trim().length === 0) {
@@ -44,6 +44,13 @@ export const validateRegister = (req, res, next) => {
   if (!passwordRegex.test(password)) {
     return res.status(400).json(
       ApiResponse.error('Password must contain at least one uppercase letter, one lowercase letter and one number')
+    );
+  }
+
+  // Validate role (if provided)
+  if (role && !['user', 'admin'].includes(role)) {
+    return res.status(400).json(
+      ApiResponse.error('Role must be either "user" or "admin"')
     );
   }
 

@@ -78,6 +78,12 @@ const userSchema = new mongoose.Schema({
   updatedAt: {
     type: Date,
     default: Date.now
+  },
+
+  // Refresh Token
+  refreshToken: {
+    type: String,
+    select: true // Cho phép hiển thị refreshToken khi query
   }
 }, {
   timestamps: true
