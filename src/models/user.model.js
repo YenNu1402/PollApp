@@ -40,11 +40,11 @@ const userSchema = new mongoose.Schema({
     default: 'user'
   },
 
-  // Ảnh đại diện
-  avatar: {
-    type: String,
-    default: 'default-avatar.png'
-  },
+  // // Ảnh đại diện
+  // avatar: {
+  //   type: String,
+  //   default: 'default-avatar.png'
+  // },
 
   // Thông tin bổ sung
   profile: {

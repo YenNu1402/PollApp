@@ -1,8 +1,8 @@
 {
-  "name": "poll-app-backend",
+  "name": "poll-app",
   "version": "1.0.0",
-  "description": "A polling application backend API",
   "type": "module",
+  "description": "A polling application backend API",
   "main": "src/main.js",
   "scripts": {
     "start": "node src/main.js",

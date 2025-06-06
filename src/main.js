@@ -10,11 +10,14 @@ import connectDB from './configs/mongoDB.config.js';
 import apiRoutes from './routes/index.js';
 import { errorHandler, notFound } from './middlewares/authenticateJWT.js';
 
+
 // Khởi tạo express
 const app = express();
 
 // Kết nối database
-connectDB();
+const startServer = async () => {
+  try {
+    await connectDB();
 
 // Body parser
 app.use(express.json({ limit: '10kb' })); // Giới hạn kích thước body
@@ -52,5 +55,13 @@ const PORT = config.port;
 app.listen(PORT, () => {
   console.log(`Server đang chạy trên cổng ${PORT}`);
 });
+
+} catch (err) {
+    console.error('Lỗi khi khởi động server:', err);
+    process.exit(1);
+  }
+};
+
+startServer();
 
 export default app; 

@@ -1,5 +1,5 @@
 import User from "../models/user.model.js";
-import bcrypt from "bcryptjs";
+import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { mailService } from "../config/sendMail.config.js";
 import { RandomOTP, GetExpiredOtp } from "../utils/otpUtil.js";

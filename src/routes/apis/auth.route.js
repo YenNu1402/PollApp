@@ -7,7 +7,7 @@ import {
   changePassword
 } from '../../controllers/auth.controller.js';
 
-import { authenticateJWT } from '../../middlewares/authenticateJWT.js'; // ✅ Sửa đúng đường dẫn và biến
+import { authenticateJWT } from '../../middlewares/authenticateJWT.js';
 import { authorize } from '../../middlewares/authenticateJWT.js';
 
 const router = express.Router();
@@ -17,7 +17,7 @@ router.post('/register', register);
 router.post('/login', login);
 
 // Protected routes
-router.use(authenticateJWT); // ✅ Sử dụng biến đúng đã import
+router.use(authenticateJWT);
 router.get('/me', getMe);
 router.put('/profile', updateProfile);
 router.put('/password', changePassword);

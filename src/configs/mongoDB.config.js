@@ -4,7 +4,7 @@ dotenv.config();
 
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/poll_app');
+    const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/poll-app');
 
     console.log(`MongoDB đã kết nối: ${conn.connection.host}`);
     mongoose.connection.on('connected', () => {

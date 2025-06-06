@@ -4,13 +4,17 @@ import { authenticateJWT, isAdmin } from '../../middlewares/authenticateJWT.js';
 
 const router = express.Router();
 
-router.get('/me', authenticateJWT, userController.getProfile);
-router.patch('/admin/users', authenticateJWT, isAdmin, userController.updateProfile);
+// Người dùng tự cập nhật hồ sơ
+router.patch('/me', authenticateJWT, userController.updateProfile);
 
-// Lấy danh sách user (chỉ admin)
+// Lấy thông tin hồ sơ
+router.get('/me', authenticateJWT, userController.getProfile);
+
+// Admin lấy danh sách user
 router.get('/admin/users', authenticateJWT, isAdmin, userController.getAllUsers);
 
-// Admin cập nhật thông tin user theo id
+// Admin cập nhật user theo id
 router.patch('/admin/users/:id', authenticateJWT, isAdmin, userController.updateUserByAdmin);
+
 
 export default router; // ✅ Xuất mặc định

@@ -2,6 +2,12 @@ import User from '../models/user.model.js';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 
+const newUser = new User({
+  username: 'nam123',
+  email: 'nam@example.com',
+  password: 'matkhau123' // sẽ được hash nếu dùng middleware `.pre('save')`
+});
+
 // Đăng ký tài khoản
 const register = async (req, res) => {
   try {
@@ -141,6 +147,8 @@ const updateUserByAdmin = async (req, res) => {
     res.status(500).json({ success: false, message: 'Failed to update user' });
   }
 };
+
+await newUser.save();
 
 // Xuất tất cả các hàm
 export {
