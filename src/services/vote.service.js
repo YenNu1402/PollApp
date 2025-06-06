@@ -6,6 +6,7 @@ class VoteService {
     this.user = User;
   }
 
+  // Thêm vote cho một poll
   async vote(pollId, optionId, userId) {
     try {
       const poll = await this.poll.findById(pollId);
@@ -42,6 +43,7 @@ class VoteService {
     }
   }
 
+  // unvote (xóa vote) cho một poll
   async unvote(pollId, userId) {
     try {
       const poll = await this.poll.findById(pollId);
@@ -65,7 +67,6 @@ class VoteService {
       if (!voteRemoved) {
         throw new Error("User has not voted in this poll");
       }
-
       await poll.save();
       return { message: "Vote removed successfully", poll };
     } catch (err) {

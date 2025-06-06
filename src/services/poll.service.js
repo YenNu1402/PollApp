@@ -6,6 +6,7 @@ class PollService {
     this.poll = Poll;
   }
 
+  // Tạo một cuộc thăm dò mới
   async createPoll(title, description, options, creatorId, expiresAt) {
     try {
       // Kiểm tra format đúng hay không?
@@ -24,6 +25,7 @@ class PollService {
     }
   }
 
+  // Cập nhật thông tin của một cuộc thăm dò
   async updatePoll(pollId, updateData, userId) {
     try {
       const poll = await this.poll.findById(pollId);
@@ -80,6 +82,8 @@ class PollService {
     }
   }
 
+
+  // Xóa một cuộc thăm dò
   async deletePoll(pollId, userId, userRole) {
     try {
       const poll = await this.poll.findById(pollId);
@@ -97,6 +101,8 @@ class PollService {
     }
   }
 
+
+  // Lấy tất cả các cuộc thăm dò với phân trang
   async getAllPolls(page, limit) {
     try {
       const skip = (page - 1) * limit;
@@ -121,6 +127,7 @@ class PollService {
     }
   }
 
+  // Lấy thông tin chi tiết của một cuộc thăm dò theo ID
   async getPollById(pollId) {
     try {
       const poll = await this.poll.findById(pollId)
@@ -151,6 +158,7 @@ class PollService {
     }
   }
 
+  //Khoá hoặc mở khoá một cuộc thăm dò
   async lockUnlockPoll(pollId, isLocked, userRole) {
     try {
       if (userRole !== 'admin') {
@@ -170,6 +178,7 @@ class PollService {
     }
   }
 
+  // Thêm option mới vào một cuộc thăm dò
   async addOptionToPoll(pollId, newOptionText, userId, userRole) {
     try {
       const poll = await this.poll.findById(pollId);
@@ -187,6 +196,7 @@ class PollService {
     }
   }
 
+  // Xóa option khỏi một cuộc thăm dò
   async removeOptionFromPoll(pollId, optionId, userId, userRole) {
     try {
       const poll = await this.poll.findById(pollId);

@@ -1,7 +1,7 @@
 import Poll from '../models/poll.model.js';
 import ApiResponse from '../utils/apiResponse.js';
 
-// Get all polls with pagination
+// Lấy danh sách các poll với phân trang
 const getPolls = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -23,7 +23,7 @@ const getPolls = async (req, res, next) => {
   }
 };
 
-// Get single poll
+// Lấy thông tin chi tiết của một poll
 const getPoll = async (req, res, next) => {
   try {
     const poll = await Poll.findById(req.params.id)
@@ -44,7 +44,7 @@ const getPoll = async (req, res, next) => {
   }
 };
 
-// Create poll
+// Tạo mới một poll
 const createPoll = async (req, res, next) => {
   try {
     const { title, description, options, expiresAt } = req.body;
@@ -77,7 +77,7 @@ const createPoll = async (req, res, next) => {
   }
 };
 
-// Update poll
+// Cập nhật thông tin của một poll
 const updatePoll = async (req, res, next) => {
   try {
     const { title, description, expiresAt } = req.body;
@@ -89,7 +89,8 @@ const updatePoll = async (req, res, next) => {
       );
     }
 
-    // Check ownership
+    // Kiểm tra quyền sở hữu
+    // Chỉ người tạo hoặc admin mới có quyền cập nhật poll
     if (poll.creator.toString() !== req.user.id && !req.user.isAdmin()) {
       return res.status(403).json(
         ApiResponse.error('Not authorized to update this poll')
@@ -127,7 +128,8 @@ const togglePollLock = async (req, res, next) => {
       );
     }
 
-    // Check ownership
+    // Kiểm tra quyền sở hữu
+    // Chỉ người tạo hoặc admin mới có quyền lock/unlock poll
     if (poll.creator.toString() !== req.user.id && !req.user.isAdmin()) {
       return res.status(403).json(
         ApiResponse.error('Not authorized to lock/unlock this poll')
@@ -148,7 +150,7 @@ const togglePollLock = async (req, res, next) => {
   }
 };
 
-// Add option to poll
+// Thêm option mới vào poll
 const addOption = async (req, res, next) => {
   try {
     const { text } = req.body;
@@ -183,7 +185,7 @@ const addOption = async (req, res, next) => {
   }
 };
 
-// Remove option from poll
+// Xóa option khỏi poll
 const removeOption = async (req, res, next) => {
   try {
     const poll = await Poll.findById(req.params.id);
@@ -213,7 +215,16 @@ const removeOption = async (req, res, next) => {
       );
     }
 
-    option.remove();
+    poll.options = poll.options.filter(opt => 
+      opt._id.toString() !== req.params.optionId
+    );
+
+    if (poll.options.length < 2) {
+      return res.status(400).json(
+        ApiResponse.error('Poll must have at least 2 options')
+      );
+    }
+
     await poll.save();
 
     res.status(200).json(
@@ -224,7 +235,7 @@ const removeOption = async (req, res, next) => {
   }
 };
 
-// Vote on poll
+// Thêm vote vào poll
 const vote = async (req, res, next) => {
   try {
     const poll = await Poll.findById(req.params.pollId);
@@ -241,7 +252,7 @@ const vote = async (req, res, next) => {
       );
     }
 
-    if (poll.isExpired()) {
+    if (poll.isExpired()) { //Kiểm tra poll đã hết hạn chưa
       return res.status(400).json(
         ApiResponse.error('Cannot vote on an expired poll')
       );
@@ -262,7 +273,7 @@ const vote = async (req, res, next) => {
   }
 };
 
-// Remove vote from poll
+// Xóa vote khỏi poll
 const removeVote = async (req, res, next) => {
   try {
     const poll = await Poll.findById(req.params.pollId);

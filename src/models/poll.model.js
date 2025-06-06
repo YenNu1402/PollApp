@@ -1,5 +1,7 @@
 import mongoose from 'mongoose';
 
+
+// Dùng mongoose để tạo schema cho các option trong poll
 const optionSchema = new mongoose.Schema({
   text: {
     type: String,
@@ -17,6 +19,7 @@ const optionSchema = new mongoose.Schema({
   }
 });
 
+// Dùng mongoose để tạo schema cho poll
 const pollSchema = new mongoose.Schema({
   title: {
     type: String,
@@ -51,27 +54,25 @@ const pollSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Pre-save middleware to update totalVotes
+// Dùng middleware để tự động cập nhật tổng số phiếu bầu khi lưu poll
 pollSchema.pre('save', function(next) {
   if (this.isModified('options')) {
     this.totalVotes = this.options.reduce((sum, option) => sum + option.voteCount, 0);
   }
   next();
 });
-
-// Method to check if poll is expired
+// Phương thức để kiểm tra xem poll đã hết hạn hay chưa
 pollSchema.methods.isExpired = function() {
   return this.expiresAt && this.expiresAt < new Date();
 };
-
-// Method to check if user has voted
+// Phương thức để kiểm tra xem người dùng đã vote hay chưa
 pollSchema.methods.hasUserVoted = function(userId) {
   return this.options.some(option => 
     option.votes.some(vote => vote.toString() === userId.toString())
   );
 };
 
-// Method to add vote
+// Phương thức để thêm một lựa chọn mới vào poll
 pollSchema.methods.addVote = async function(userId, optionId) {
   const option = this.options.id(optionId);
   if (!option) throw new Error('Option not found');
@@ -87,7 +88,7 @@ pollSchema.methods.addVote = async function(userId, optionId) {
   return this;
 };
 
-// Method to remove vote
+// Phương thức để xóa một phiếu bầu của người dùng
 pollSchema.methods.removeVote = async function(userId, optionId) {
   const option = this.options.id(optionId);
   if (!option) throw new Error('Option not found');
@@ -100,7 +101,7 @@ pollSchema.methods.removeVote = async function(userId, optionId) {
     throw new Error('Vote not found');
   }
   
-  option.votes.splice(voteIndex, 1);
+  option.votes.splice(voteIndex, 1);// Xóa phiếu bầu của người dùng
   option.voteCount -= 1;
   await this.save();
   

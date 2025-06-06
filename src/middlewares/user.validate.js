@@ -47,7 +47,7 @@ export const validateRegister = (req, res, next) => {
     );
   }
 
-  // Validate role (if provided)
+  // Validate role nếu có
   if (role && !['user', 'admin'].includes(role)) {
     return res.status(400).json(
       ApiResponse.error('Role must be either "user" or "admin"')
@@ -81,7 +81,7 @@ export const validateLogin = (req, res, next) => {
     );
   }
 
-  // Validate password
+  // Validate mật khẩu
   if (!password || password.trim().length === 0) {
     return res.status(400).json(
       ApiResponse.error('Password is required')
@@ -116,7 +116,7 @@ export const validateUpdateProfile = (req, res, next) => {
     );
   }
 
-  // Validate bio
+  // Validate bio dùng để mô tả ngắn gọn về người dùng
   if (bio && bio.length > 160) {
     return res.status(400).json(
       ApiResponse.error('Bio cannot exceed 160 characters')
@@ -129,8 +129,8 @@ export const validateUpdateProfile = (req, res, next) => {
       ApiResponse.error('Location cannot exceed 100 characters')
     );
   }
-
-  // Validate website
+ 
+  // Validate website dùng để liên kết đến trang cá nhân hoặc trang web của người dùng
   if (website) {
     const urlRegex = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/;
     if (!urlRegex.test(website)) {

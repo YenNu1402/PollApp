@@ -9,6 +9,7 @@ class UserService {
     this.user = User;
   }
 
+  // Đăng ký người dùng mới
   async register(username, email, password, role = 'user') {
     try {
       const existingUser = await this.user.findOne({ email });
@@ -24,6 +25,7 @@ class UserService {
     }
   }
 
+  // Đăng nhập người dùng
   async login(email, password) {
     try {
       const user = await this.user.findOne({ email });
@@ -56,6 +58,7 @@ class UserService {
     }
   }
 
+  // Làm mới token
   async refreshToken(oldRefreshToken) {
     try {
       if (!oldRefreshToken) {
@@ -81,6 +84,8 @@ class UserService {
     }
   }
 
+
+  //Quên mật khẩu
   async forgotPassword(email) {
     try {
       const user = await this.user.findOne({ email });
@@ -112,6 +117,7 @@ class UserService {
     }
   }
 
+  // Reset mật khẩu
   async resetPassword(otp, email, newPassword) {
     try {
       const user = await this.user.findOne({ email });
@@ -139,6 +145,7 @@ class UserService {
     }
   }
 
+  // Lấy thông tin cá nhân của người dùng
   async getMyProfile(userId) {
     try {
       const user = await this.user.findById(userId).select('-password -otp -expiredOtp');
@@ -151,6 +158,7 @@ class UserService {
     }
   }
 
+  // Cập nhật thông tin cá nhân của người dùng
   async updateMyProfile(userId, updateData) {
     try {
       //Ngăn không cho update các trường bí mật
@@ -179,6 +187,7 @@ class UserService {
     }
   }
 
+  // Lấy thông tin người dùng theo ID
   async getUserById(id) {
     try {
       const user = await this.user.findById(id).select('-password -otp -expiredOtp');
@@ -191,6 +200,7 @@ class UserService {
     }
   }
 
+  // Tạo người dùng mới (chỉ dành cho admin)
   async createUser(username, email, password, role) {
     try {
       const existingUser = await this.user.findOne({ email });
@@ -206,6 +216,7 @@ class UserService {
     }
   }
 
+  // Cập nhật thông tin người dùng theo ID (chỉ dành cho admin)
   async updateUserById(id, updateData) {
     try {
       // Admin update role nhưng không update được các dữ liệu khác như password, accesstoken, refreshToken, otp, expiredOtp
@@ -222,6 +233,7 @@ class UserService {
     }
   }
 
+  // Xóa người dùng theo ID (chỉ dành cho admin)
   async deleteUserById(id) {
     try {
       const deletedUser = await this.user.findByIdAndDelete(id);
