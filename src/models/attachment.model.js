@@ -1,4 +1,3 @@
-
 const attachmentSchema = new mongoose.Schema({
   filename: String,
   url: String,

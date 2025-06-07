@@ -24,7 +24,7 @@ const voteSchema = new mongoose.Schema({
     timestamps: true
 });
 
-// Ensure one vote per user per poll
+// Tạo chỉ mục duy nhất cho user và poll để tránh việc người dùng bỏ phiếu nhiều lần cho cùng một cuộc thăm dò
 voteSchema.index({ user: 1, poll: 1 }, { unique: true });
 
 const Vote = mongoose.model('Vote', voteSchema);

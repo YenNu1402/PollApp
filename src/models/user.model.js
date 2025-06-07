@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 
 // Định nghĩa schema cho người dùng
 const userSchema = new mongoose.Schema({
@@ -40,12 +41,6 @@ const userSchema = new mongoose.Schema({
     default: 'user'
   },
 
-  // // Ảnh đại diện
-  // avatar: {
-  //   type: String,
-  //   default: 'default-avatar.png'
-  // },
-
   // Thông tin bổ sung
   profile: {
     fullName: String,
@@ -84,7 +79,10 @@ const userSchema = new mongoose.Schema({
   refreshToken: {
     type: String,
     select: true // Cho phép hiển thị refreshToken khi query
-  }
+  },
+  resetPasswordToken: String,
+  resetPasswordExpire: Date
+
 }, {
   timestamps: true
 });
@@ -137,6 +135,24 @@ userSchema.methods.incrementVoteCount = async function() {
 userSchema.methods.decrementVoteCount = async function() {
   this.stats.totalVotes = Math.max(0, this.stats.totalVotes - 1);
   return this.save();
+};
+
+
+// Tạo token reset password và gán vào user
+userSchema.methods.getResetPasswordToken = function () {
+  // Tạo token ngẫu nhiên
+  const resetToken = crypto.randomBytes(20).toString('hex');
+
+  // Mã hóa token và lưu vào user
+  this.resetPasswordToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+
+  // Hạn sử dụng token: 10 phút
+  this.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
+
+  return resetToken; // trả về token gốc để gửi email
 };
 
 const User = mongoose.model('User', userSchema);

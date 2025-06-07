@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import User from '../models/user.model.js';
 import config from '../configs/mongoose.config.js';
 import ApiResponse from '../utils/apiResponse.js';
+import crypto from 'crypto';
 
     //Tạo token
 const generateToken = (user) => {
@@ -178,5 +179,82 @@ export const changePassword = async (req, res, next) => {
     );
   } catch (error) {
     next(error);
+  }
+};
+
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // Tìm user với email
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy người dùng với email này'
+      });
+    }
+
+    // Tạo reset token
+    const resetToken = user.getResetPasswordToken();
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Email reset password đã được gửi',
+      resetToken
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi server'
+    });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  try {
+    // Lấy token từ params và hash
+    const resetPasswordToken = crypto
+      .createHash('sha256')
+      .update(req.params.resetToken)
+      .digest('hex');
+
+    // Tìm user với token và kiểm tra token còn hạn không
+    const user = await User.findOne({
+      resetPasswordToken,
+      resetPasswordExpire: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: 'Token không hợp lệ hoặc đã hết hạn'
+      });
+    }
+
+    // Set mật khẩu mới
+    user.password = req.body.password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+    await user.save();
+
+    // Tạo JWT token mới
+    const token = jwt.sign({ id: user._id }, config.jwtSecret, {
+      expiresIn: config.jwtExpire
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Mật khẩu đã được thay đổi thành công',
+      token
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi server'
+    });
   }
 }; 

@@ -33,6 +33,7 @@ class ApiResponse {
     return response;
   }
 
+  //Phản hồi phân trang
   static paginate(data, page, limit, total) {
     return {
       success: true,

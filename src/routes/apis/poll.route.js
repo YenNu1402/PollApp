@@ -15,8 +15,8 @@ import { authenticateJWT } from '../../middlewares/authenticateJWT.js';
 const router = express.Router();
 
 // Public routes
-router.get('/', getPolls);
-router.get('/:id', getPoll);
+router.get('/', getPolls); // Lấy danh sách khảo sát
+router.get('/:id', getPoll); // Xem chi tiết khảo sát
 
 // Protected routes
 router.post('/', authenticateJWT, createPoll);

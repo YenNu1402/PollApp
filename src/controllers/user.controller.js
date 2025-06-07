@@ -162,6 +162,38 @@ const getUserTokens = async (req, res) => {
   }
 };
 
+// Quên mật khẩu
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+  if (!user) return res.status(404).json({ success: false, message: 'Email not found' });
+
+  const resetToken = user.getResetPasswordToken();
+  await user.save();
+
+  const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+};
+
+
+const resetPassword = async (req, res) => {
+  const resetToken = req.params.token;
+  const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+
+  const user = await User.findOne({
+    resetPasswordToken: hashedToken,
+    resetPasswordExpire: { $gt: Date.now() }
+  });
+
+  if (!user) return res.status(400).json({ success: false, message: 'Invalid or expired token' });
+
+  user.password = req.body.password;
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpire = undefined;
+
+  await user.save();
+  res.json({ success: true, message: 'Password reset successfully' });
+};
+
 // Xuất tất cả các hàm
 export {
   register,
@@ -172,5 +204,7 @@ export {
   updateProfile,
   getAllUsers,
   updateUserByAdmin,
-  getUserTokens
+  getUserTokens,
+  forgotPassword,
+  resetPassword
 };
