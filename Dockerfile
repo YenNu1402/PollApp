@@ -17,7 +17,7 @@ COPY . .
 
 # Mở cổng 3000 để ứng dụng có thể lắng nghe (listen) từ bên ngoài container
 # Tuy nhiên, để truy cập được bạn vẫn cần `-p` khi chạy container: ví dụ `docker run -p 3000:3000`
-EXPOSE 3000
+EXPOSE 4000
 
 # Câu lệnh mặc định để khởi chạy ứng dụng khi container bắt đầu
 # Ở đây là: npm run dev (ví dụ với nodemon hoặc script bạn đã định nghĩa trong package.json)

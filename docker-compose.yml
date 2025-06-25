@@ -23,7 +23,7 @@ services:
     env_file:
       - .env  # Load biến môi trường từ file `.env` bên ngoài
     environment:
-      MONGODB_URI: mongodb://db:27017/PollAppBackEnd  # Thiết lập biến môi trường MONGODB_URI, kết nối tới service `db`, dùng db service làm db_host
+      MONGODB_URI: mongodb://db:27017/poll-app  # Thiết lập biến môi trường MONGODB_URI, kết nối tới service `db`, dùng db service làm db_host
     networks:
       - demoexpress_network  # Kết nối container với mạng nội bộ
 
