@@ -19,6 +19,11 @@ const startServer = async () => {
   try {
     await connectDB();
 
+// Logger trong môi trường development
+if (config.nodeEnv === 'development') {
+  app.use(morgan('dev'));
+}
+
 // Body parser
 app.use(express.json({ limit: '10kb' })); // Giới hạn kích thước body
 app.use(express.urlencoded({ extended: true }));
@@ -36,19 +41,32 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
-// Logger trong môi trường development
-if (config.nodeEnv === 'development') {
-  app.use(morgan('dev'));
-}
+
+// // Protected routes
+// app.use(authenticateJWT);
+// app.use('/api/users', userRoutes);
+// app.use('/api/polls', pollRoutes);
+
+// Xử lý route không tồn tại
+// app.get('/', (req, res) => {
+//   res.send('Chào mừng đến với Poll App! Truy cập /api/health để kiểm tra.');
+// });
 
 // Routes
 app.use('/api', apiRoutes);
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Chào mừng đến với Poll App!',
+    link: '/api/health'
+  });
+});
 
-// Xử lý route không tồn tại
 app.use(notFound);
 
 // Xử lý lỗi toàn cục
 app.use(errorHandler);
+
 
 // Khởi động server
 const PORT = config.port;
