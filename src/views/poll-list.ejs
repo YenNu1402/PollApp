@@ -1,7 +1,0 @@
-<!-- views/poll-list.ejs -->
-<h1>Danh sách Poll</h1>
-<ul>
-  <% polls.forEach(poll => { %>
-    <li><a href="/polls/view/<%= poll._id %>"><%= poll.title %></a></li>
-  <% }) %>
-</ul>

@@ -1,10 +1,24 @@
-const express = require('express');
+import express from 'express';
+import authRoutes from './apis/auth.route.js';
+import pollRoutes from './apis/poll.route.js';
+import userRoutes from './apis/user.route.js'; // Thêm .js và đường dẫn đúng
+import voteRoutes from './apis/vote.route.js'; // Thêm .js và đường dẫn đúng
+
 const router = express.Router();
-const authRoutes = require('./apis/auth.route');
 
-router.use('/auth', require('./apis/auth.route'));
-router.use('/polls', require('./apis/poll.route'));
-router.use('/users', require('./apis/user.route'));
-router.use('/votes', require('./apis/vote.route'));
+// Route kiểm tra server hoạt động
+router.get('/health', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Server đang hoạt động',
+    timestamp: new Date().toISOString()
+  });
+});
 
-module.exports = router;
+// Gắn các routes
+router.use('/auth', authRoutes);
+router.use('/polls', pollRoutes);
+router.use('/users', userRoutes);
+router.use('/votes', voteRoutes);
+
+export default router; // Thay thế module.exports = router;

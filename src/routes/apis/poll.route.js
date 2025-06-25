@@ -1,44 +1,30 @@
-const express = require('express');
+import express from 'express';
+import {
+  getPolls,
+  getPoll,
+  createPoll,
+  updatePoll,
+  togglePollLock,
+  addOption,
+  removeOption,
+  vote,
+  removeVote
+} from '../../controllers/poll.controller.js';
+import { authenticateJWT } from '../../middlewares/authenticateJWT.js';
+
 const router = express.Router();
-const pollController = require('../../controllers/poll.controller');
-const { authenticateJWT, isAdmin } = require('../../middlewares/authenticateJWT');
 
-// ==== API Routes ====
-// Lấy tất cả các poll (có phân trang)
-router.get('/', authenticateJWT, pollController.getAllPolls);
+// Public routes
+router.get('/', getPolls); // Lấy danh sách khảo sát
+router.get('/:id', getPoll); // Xem chi tiết khảo sát
 
-// Lấy chi tiết 1 poll theo ID
-router.get('/:id', authenticateJWT, pollController.getPollById);
+// Protected routes
+router.post('/', authenticateJWT, createPoll);
+router.put('/:id', authenticateJWT, updatePoll);
+router.patch('/:id/lock', authenticateJWT, togglePollLock);
+router.post('/:id/options', authenticateJWT, addOption);
+router.delete('/:id/options/:optionId', authenticateJWT, removeOption);
+router.post('/:pollId/vote/:optionId', authenticateJWT, vote);
+router.delete('/:pollId/vote/:optionId', authenticateJWT, removeVote);
 
-// Admin tạo poll mới
-router.post('/', authenticateJWT, isAdmin, pollController.create);
-
-// Admin cập nhật poll
-router.patch('/:id', authenticateJWT, isAdmin, pollController.update);
-
-// Admin khóa poll
-router.patch('/:id/lock', authenticateJWT, isAdmin, pollController.lockPoll);
-
-// Admin mở khóa poll (nếu muốn)
-router.patch('/:id/unlock', authenticateJWT, isAdmin, pollController.unlockPoll); // OPTIONAL
-
-// Người dùng bình chọn
-router.post('/:id/vote', authenticateJWT, pollController.vote);
-
-// Người dùng hủy bình chọn
-router.post('/:id/unvote', authenticateJWT, pollController.unvote);
-
-// ==== Render EJS Pages ====
-// Hiển thị form tạo poll
-router.get('/create', authenticateJWT, isAdmin, pollController.renderCreatePollForm);
-
-// Submit form tạo poll
-router.post('/create', authenticateJWT, isAdmin, pollController.handleCreatePoll);
-
-// Danh sách Poll hiển thị bằng EJS
-router.get('/view/all', authenticateJWT, pollController.renderAllPollsPage);
-
-// Xem poll chi tiết bằng EJS
-router.get('/view/:id', authenticateJWT, pollController.renderPollDetailPage);
-
-module.exports = router;
+export default router; 

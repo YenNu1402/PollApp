@@ -1,6 +1,6 @@
-const User = require('../models/user.model');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
+import User from '../models/user.model.js';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 
 // Đăng ký tài khoản
 const register = async (req, res) => {
@@ -101,7 +101,7 @@ const getProfile = async (req, res) => {
 // Cập nhật thông tin user
 const updateProfile = async (req, res) => {
   try {
-    const disallowedFields = ['password', 'role', '_id', 'refreshToken'];
+    const disallowedFields = ['password', 'role', '_id'];
     disallowedFields.forEach(field => delete req.body[field]);
 
     const updated = await User.findByIdAndUpdate(
@@ -121,7 +121,7 @@ const updateProfile = async (req, res) => {
 // Lấy danh sách tất cả user (admin)
 const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find().select('-password -refreshToken');
+    const users = await User.find().select('-password');
     res.json({ success: true, data: users });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Failed to get users' });
@@ -132,7 +132,7 @@ const getAllUsers = async (req, res) => {
 const updateUserByAdmin = async (req, res) => {
   try {
     const { id } = req.params;
-    const updatedUser = await User.findByIdAndUpdate(id, req.body, { new: true }).select('-password -refreshToken');
+    const updatedUser = await User.findByIdAndUpdate(id, req.body, { new: true }).select('-password');
     if (!updatedUser) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
@@ -142,8 +142,60 @@ const updateUserByAdmin = async (req, res) => {
   }
 };
 
+// Admin xem thông tin refreshToken đầy đủ
+const getUserTokens = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findById(userId).select('email refreshToken');
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    res.json({ 
+      success: true, 
+      data: {
+        email: user.email,
+        refreshToken: user.refreshToken
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to get user tokens' });
+  }
+};
+
+// Quên mật khẩu
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+  if (!user) return res.status(404).json({ success: false, message: 'Email not found' });
+
+  const resetToken = user.getResetPasswordToken();
+  await user.save();
+
+  const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+};
+
+
+const resetPassword = async (req, res) => {
+  const resetToken = req.params.token;
+  const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+
+  const user = await User.findOne({
+    resetPasswordToken: hashedToken,
+    resetPasswordExpire: { $gt: Date.now() }
+  });
+
+  if (!user) return res.status(400).json({ success: false, message: 'Invalid or expired token' });
+
+  user.password = req.body.password;
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpire = undefined;
+
+  await user.save();
+  res.json({ success: true, message: 'Password reset successfully' });
+};
+
 // Xuất tất cả các hàm
-module.exports = {
+export {
   register,
   login,
   refreshToken,
@@ -151,5 +203,8 @@ module.exports = {
   getProfile,
   updateProfile,
   getAllUsers,
-  updateUserByAdmin
+  updateUserByAdmin,
+  getUserTokens,
+  forgotPassword,
+  resetPassword
 };

@@ -1,110 +1,318 @@
-const Poll = require('../models/poll.model');
+import Poll from '../models/poll.model.js';
+import ApiResponse from '../utils/apiResponse.js';
 
-const create = async (req, res) => {
-  const poll = new Poll({ ...req.body, creator: req.user.id });
-  await poll.save();
-  res.status(201).json({ success: true, data: poll });
-};
-
-const update = async (req, res) => {
-  const updated = await Poll.findByIdAndUpdate(req.params.id, req.body, { new: true });
-  res.json({ success: true, data: updated });
-};
-
-const getPolls = async (req, res) => {
-  const { page = 1, limit = 10 } = req.query;
-  const polls = await Poll.find()
-    .populate('creator', 'username')
-    .skip((page - 1) * limit)
-    .limit(Number(limit));
-  const total = await Poll.countDocuments();
-  res.json({
-    success: true,
-    message: 'Get all Poll successfully',
-    data: { polls, total, page: Number(page), limit: Number(limit) }
-  });
-};
-
-const getPollById = async (req, res) => {
-  const poll = await Poll.findById(req.params.id).populate('creator', 'username');
-  res.json({ success: true, message: 'Get Poll successfully', data: poll });
-};
-
-const lockPoll = async (req, res) => {
-  const poll = await Poll.findByIdAndUpdate(req.params.id, { isLocked: true }, { new: true });
-  res.json({ success: true, message: 'Poll locked', data: poll });
-};
-
-const unlockPoll = async (req, res) => {
+// Lấy danh sách các poll với phân trang
+const getPolls = async (req, res, next) => {
   try {
-    const poll = await Poll.findByIdAndUpdate(req.params.id, { isLocked: false }, { new: true });
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const startIndex = (page - 1) * limit;
+
+    const total = await Poll.countDocuments();
+    const polls = await Poll.find()
+      .populate('creator', 'username')
+      .sort('-createdAt')
+      .skip(startIndex)
+      .limit(limit);
+
+    res.status(200).json(
+      ApiResponse.paginate(polls, page, limit, total)
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Lấy thông tin chi tiết của một poll
+const getPoll = async (req, res, next) => {
+  try {
+    const poll = await Poll.findById(req.params.id)
+      .populate('creator', 'username')
+      .populate('options.votes', 'username');
 
     if (!poll) {
-      return res.status(404).json({ success: false, message: 'Poll not found' });
+      return res.status(404).json(
+        ApiResponse.error('Poll not found')
+      );
     }
 
-    res.json({ success: true, message: 'Poll unlocked', data: poll });
+    res.status(200).json(
+      ApiResponse.success('Poll retrieved successfully', poll)
+    );
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error', error });
+    next(error);
   }
 };
 
-const renderCreatePollForm = (req, res) => {
-  res.render('create-poll');
-};
-
-const handleCreatePoll = async (req, res) => {
-  const { question, options } = req.body;
-  const formattedOptions = options.map(text => ({ text, votes: [] })); // ✅ votes là array, không phải số 0
-  const poll = new Poll({ question, options: formattedOptions });
-  await poll.save();
-  res.redirect(`/polls/${poll._id}`);
-};
-
-const getAllPolls = (req, res) => {
-  res.send('List of polls');
-};
-
-const vote = async (req, res) => {
-  res.json({ success: true, message: 'Vote API is working' });
-};
-
-const unvote = async (req, res) => {
-  res.json({ success: true, message: 'Unvote API is working' });
-};
-
-const renderAllPollsPage = async (req, res) => {
+// Tạo mới một poll
+const createPoll = async (req, res, next) => {
   try {
-    const polls = await Poll.find().populate('creator', 'username');
-    res.render('poll-list', { polls }); // EJS template `views/poll-list.ejs`
+    const { title, description, options, expiresAt } = req.body;
+
+    if (!options || !Array.isArray(options) || options.length < 2) {
+      return res.status(400).json(
+        ApiResponse.error('Please provide at least 2 options')
+      );
+    }
+
+    const formattedOptions = options.map(opt => ({
+      text: typeof opt === 'string' ? opt : opt.text,
+      votes: [],
+      voteCount: 0
+    }));
+
+    const poll = await Poll.create({
+      title,
+      description,
+      creator: req.user.id,
+      options: formattedOptions,
+      expiresAt: expiresAt ? new Date(expiresAt) : undefined
+    });
+
+    res.status(201).json(
+      ApiResponse.success('Poll created successfully', poll)
+    );
   } catch (error) {
-    res.status(500).send('Server Error');
+    next(error);
   }
 };
 
-const renderPollDetailPage = async (req, res) => {
+// Cập nhật thông tin của một poll
+const updatePoll = async (req, res, next) => {
   try {
-    const poll = await Poll.findById(req.params.id).populate('creator', 'username');
-    if (!poll) return res.status(404).send('Poll not found');
-    res.render('poll-detail', { poll }); // EJS file: views/poll-detail.ejs
+    const { title, description, expiresAt } = req.body;
+    const poll = await Poll.findById(req.params.id);
+
+    if (!poll) {
+      return res.status(404).json(
+        ApiResponse.error('Poll not found')
+      );
+    }
+
+    // Kiểm tra quyền sở hữu
+    // Chỉ người tạo hoặc admin mới có quyền cập nhật poll
+    if (poll.creator.toString() !== req.user.id && !req.user.isAdmin()) {
+      return res.status(403).json(
+        ApiResponse.error('Not authorized to update this poll')
+      );
+    }
+
+    if (poll.isLocked) {
+      return res.status(400).json(
+        ApiResponse.error('Cannot update a locked poll')
+      );
+    }
+
+    poll.title = title || poll.title;
+    poll.description = description || poll.description;
+    poll.expiresAt = expiresAt || poll.expiresAt;
+
+    await poll.save();
+
+    res.status(200).json(
+      ApiResponse.success('Poll updated successfully', poll)
+    );
   } catch (error) {
-    res.status(500).send('Server Error');
+    next(error);
   }
 };
 
+// Lock/Unlock poll
+const togglePollLock = async (req, res, next) => {
+  try {
+    const poll = await Poll.findById(req.params.id);
 
-module.exports = {
-  create,
-  update,
+    if (!poll) {
+      return res.status(404).json(
+        ApiResponse.error('Poll not found')
+      );
+    }
+
+    // Kiểm tra quyền sở hữu
+    // Chỉ người tạo hoặc admin mới có quyền lock/unlock poll
+    if (poll.creator.toString() !== req.user.id && !req.user.isAdmin()) {
+      return res.status(403).json(
+        ApiResponse.error('Not authorized to lock/unlock this poll')
+      );
+    }
+
+    poll.isLocked = !poll.isLocked;
+    await poll.save();
+
+    res.status(200).json(
+      ApiResponse.success(
+        `Poll ${poll.isLocked ? 'locked' : 'unlocked'} successfully`,
+        poll
+      )
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Thêm option mới vào poll
+const addOption = async (req, res, next) => {
+  try {
+    const { text } = req.body;
+    const poll = await Poll.findById(req.params.id);
+
+    if (!poll) {
+      return res.status(404).json(
+        ApiResponse.error('Poll not found')
+      );
+    }
+
+    if (poll.isLocked) {
+      return res.status(400).json(
+        ApiResponse.error('Cannot add option to a locked poll')
+      );
+    }
+
+    if (poll.isExpired()) {
+      return res.status(400).json(
+        ApiResponse.error('Cannot add option to an expired poll')
+      );
+    }
+
+    poll.options.push({ text });
+    await poll.save();
+
+    res.status(200).json(
+      ApiResponse.success('Option added successfully', poll)
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Xóa option khỏi poll
+const removeOption = async (req, res, next) => {
+  try {
+    const poll = await Poll.findById(req.params.id);
+
+    if (!poll) {
+      return res.status(404).json(
+        ApiResponse.error('Poll not found')
+      );
+    }
+
+    if (poll.isLocked) {
+      return res.status(400).json(
+        ApiResponse.error('Cannot remove option from a locked poll')
+      );
+    }
+
+    const option = poll.options.id(req.params.optionId);
+    if (!option) {
+      return res.status(404).json(
+        ApiResponse.error('Option not found')
+      );
+    }
+
+    if (option.votes.length > 0) {
+      return res.status(400).json(
+        ApiResponse.error('Cannot remove an option that has votes')
+      );
+    }
+
+    poll.options = poll.options.filter(opt => 
+      opt._id.toString() !== req.params.optionId
+    );
+
+    if (poll.options.length < 2) {
+      return res.status(400).json(
+        ApiResponse.error('Poll must have at least 2 options')
+      );
+    }
+
+    await poll.save();
+
+    res.status(200).json(
+      ApiResponse.success('Option removed successfully', poll)
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Thêm vote vào poll
+const vote = async (req, res, next) => {
+  try {
+    const poll = await Poll.findById(req.params.pollId);
+
+    if (!poll) {
+      return res.status(404).json(
+        ApiResponse.error('Poll not found')
+      );
+    }
+
+    if (poll.isLocked) {
+      return res.status(400).json(
+        ApiResponse.error('Cannot vote on a locked poll')
+      );
+    }
+
+    if (poll.isExpired()) { //Kiểm tra poll đã hết hạn chưa
+      return res.status(400).json(
+        ApiResponse.error('Cannot vote on an expired poll')
+      );
+    }
+
+    await poll.addVote(req.user.id, req.params.optionId);
+
+    res.status(200).json(
+      ApiResponse.success('Vote added successfully', poll)
+    );
+  } catch (error) {
+    if (error.message === 'User has already voted') {
+      return res.status(400).json(
+        ApiResponse.error(error.message)
+      );
+    }
+    next(error);
+  }
+};
+
+// Xóa vote khỏi poll
+const removeVote = async (req, res, next) => {
+  try {
+    const poll = await Poll.findById(req.params.pollId);
+
+    if (!poll) {
+      return res.status(404).json(
+        ApiResponse.error('Poll not found')
+      );
+    }
+
+    if (poll.isLocked) {
+      return res.status(400).json(
+        ApiResponse.error('Cannot remove vote from a locked poll')
+      );
+    }
+
+    await poll.removeVote(req.user.id, req.params.optionId);
+
+    res.status(200).json(
+      ApiResponse.success('Vote removed successfully', poll)
+    );
+  } catch (error) {
+    if (error.message === 'Vote not found') {
+      return res.status(400).json(
+        ApiResponse.error(error.message)
+      );
+    }
+    next(error);
+  }
+};
+
+export {
   getPolls,
-  getPollById,
-  lockPoll,
-  unlockPoll,
-  renderCreatePollForm,
-  handleCreatePoll,
-  getAllPolls,
+  getPoll,
+  createPoll,
+  updatePoll,
+  togglePollLock,
+  addOption,
+  removeOption,
   vote,
-  unvote,
-  renderAllPollsPage,
-  renderPollDetailPage,
+  removeVote,
 };

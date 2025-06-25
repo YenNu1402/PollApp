@@ -1,9 +1,29 @@
-const express = require('express');
+import express from 'express';
+import {
+  register,
+  login,
+  getMe,
+  updateProfile,
+  changePassword,
+  forgotPassword,
+  resetPassword
+} from '../../controllers/auth.controller.js';
+
+import { authenticateJWT } from '../../middlewares/authenticateJWT.js';
+import { authorize } from '../../middlewares/authenticateJWT.js';
+
 const router = express.Router();
-const authController = require('../../controllers/auth.controller');
 
-router.post('/register', authController.register);
-router.post('/login', authController.login);
-router.post('/refresh-token', authController.refreshToken);
+// Public routes
+router.post('/register', register);
+router.post('/login', login);
+router.post('/forgot-password', forgotPassword);
+router.post('/reset-password/:resetToken', resetPassword);
 
-module.exports = router;
+// Protected routes
+router.use(authenticateJWT);
+router.get('/me', getMe);
+router.put('/profile', updateProfile);
+router.put('/password', changePassword);
+
+export default router;

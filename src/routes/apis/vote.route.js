@@ -1,9 +1,10 @@
-const express = require('express');
+import express from 'express';
+import voteController from '../../controllers/vote.controller.js';
+import { authenticateJWT } from '../../middlewares/authenticateJWT.js';
+
 const router = express.Router();
-const voteController = require('../../controllers/vote.controller');
-const { authenticateJWT } = require('../../middlewares/authenticateJWT');
 
 router.post('/:id/vote', authenticateJWT, voteController.vote);
 router.delete('/:id/unvote', authenticateJWT, voteController.unvote);
 
-module.exports = router;
+export default router;
