@@ -75,17 +75,17 @@ jobs:
         if: always()
         run: |
           if [ "${{ job.status }}" == "success" ]; then
-            echo "✅ Pipeline completed successfully!"
-            echo "🎉 Deployment ready for PollApp"
+            echo "Pipeline completed successfully!"
+            echo "Deployment ready for PollApp"
           else
-            echo "❌ Pipeline failed!"
-            echo "🔧 Please check the logs for issues"
+            echo "Pipeline failed!"
+            echo "Please check the logs for issues"
           fi
 
       - name: Generate deployment report
         if: success()
         run: |
-          echo "📊 Deployment Report" > deployment-report.txt
+          echo "Deployment Report" > deployment-report.txt
           echo "===================" >> deployment-report.txt
           echo "Date: $(date)" >> deployment-report.txt
           echo "Branch: ${{ github.ref_name }}" >> deployment-report.txt
@@ -93,7 +93,7 @@ jobs:
           echo "Author: ${{ github.actor }}" >> deployment-report.txt
           echo "Status: SUCCESS" >> deployment-report.txt
           echo "" >> deployment-report.txt
-          echo "✅ All checks passed" >> deployment-report.txt
-          echo "✅ Code quality verified" >> deployment-report.txt
-          echo "✅ Security audit completed" >> deployment-report.txt
-          echo "✅ Tests executed successfully" >> deployment-report.txt
+          echo "All checks passed" >> deployment-report.txt
+          echo "Code quality verified" >> deployment-report.txt
+          echo "Security audit completed" >> deployment-report.txt
+          echo "Tests executed successfully" >> deployment-report.txt
