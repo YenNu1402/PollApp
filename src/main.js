@@ -6,7 +6,7 @@ import rateLimit from 'express-rate-limit';
 import mongoSanitize from 'express-mongo-sanitize';
 import xss from 'xss-clean';
 import config from './configs/mongoose.config.js';
-import connectDB from './configs/mongoDB.config.js';
+import connectDB from './configs/mongodb.config.js';
 import apiRoutes from './routes/index.js';
 import { errorHandler, notFound } from './middlewares/authenticateJWT.js';
 import path from 'path';
