@@ -9,6 +9,7 @@ import config from './configs/mongoose.config.js';
 import connectDB from './configs/mongoDB.config.js';
 import apiRoutes from './routes/index.js';
 import { errorHandler, notFound } from './middlewares/authenticateJWT.js';
+import path from 'path';
 
 
 // Khởi tạo express
@@ -23,6 +24,13 @@ const startServer = async () => {
 if (config.nodeEnv === 'development') {
   app.use(morgan('dev'));
 }
+
+
+// Thiết lập view engine là EJS
+app.set('view engine', 'ejs');
+
+// Thiết lập thư mục views (nên đặt ở gốc project)
+app.set('views', path.join(process.cwd(), 'views'));
 
 // Body parser
 app.use(express.json({ limit: '10kb' })); // Giới hạn kích thước body
@@ -55,6 +63,7 @@ app.get('/', (req, res) => {
     },
     timestamp: new Date().toISOString()
   });
+  res.render('home', { title: 'Trang chủ', username: 'Yến' });
 });
 
 // Sử dụng routes chính
