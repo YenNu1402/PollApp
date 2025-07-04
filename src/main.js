@@ -92,7 +92,7 @@ app.use(errorHandler);
 // Khởi động server
 const PORT = config.port;
 app.listen(PORT, () => {
-  console.log(`Server  chạy trên cổng ${PORT}`);
+  console.log(`Server cổng ${PORT}`);
 });
 
 } catch (err) {
