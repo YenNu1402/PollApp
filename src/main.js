@@ -49,20 +49,37 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
-// Root route - phải đặt trước notFound middleware và trước mọi route khác
+// Root route - phải đặt trước notFound middleware
 app.get('/', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'Chào mừng đến với Poll App!',
-    endpoints: {
-      health: '/api/health',
-      auth: '/api/auth',
-      polls: '/api/polls',
-      users: '/api/users',
-      votes: '/api/votes'
-    }
-  });
+  res.render('home', { title: 'Trang chủ', username: 'Yến' });
+  // res.status(200).json({
+  //   success: true,
+  //   message: 'Chào mừng đến với Poll App!',
+  //   endpoints: {
+  //     health: '/api/health',
+  //     auth: '/api/auth',
+  //     polls: '/api/polls',
+  //     users: '/api/users',
+  //     votes: '/api/votes'
+  //   },
+  //   timestamp: new Date().toISOString()
+  // });
 });
+
+// app.get('/api/info', (req, res) => {
+//   res.status(200).json({
+//     success: true,
+//     message: 'Chào mừng đến với Poll App!',
+//     endpoints: {
+//       health: '/api/health',
+//       auth: '/api/auth',
+//       polls: '/api/polls',
+//       users: '/api/users',
+//       votes: '/api/votes'
+//     },
+//     timestamp: new Date().toISOString()
+//   });
+// });
 
 // Sử dụng routes chính
 app.use('/api', apiRoutes);
