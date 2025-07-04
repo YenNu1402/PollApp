@@ -47,9 +47,13 @@ export const isAdmin = (req, res, next) => {
 // Middleware để xử lý lỗi 404
 // Nếu không tìm thấy route nào khớp với request
 export const notFound = (req, res, next) => {
-  const error = new Error(`Không tìm thấy: ${req.originalUrl}`);
-  res.status(404);
-  next(error);
+  // const error = new Error(`Không tìm thấy: ${req.originalUrl}`);
+  // res.status(404);
+  // next(error);
+  res.status(404).json({
+    success: false,
+    message: `Không tìm thấy: ${req.originalUrl}`
+  });
 };
 
 // Middleware để xử lý lỗi chung

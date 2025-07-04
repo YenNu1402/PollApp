@@ -41,32 +41,29 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
-
-// // Protected routes
-// app.use(authenticateJWT);
-// app.use('/api/users', userRoutes);
-// app.use('/api/polls', pollRoutes);
-
-// Xử lý route không tồn tại
-// app.get('/', (req, res) => {
-//   res.send('Chào mừng đến với Poll App! Truy cập /api/health để kiểm tra.');
-// });
-
-// Routes
-app.use('/api', apiRoutes);
+// Root route - phải đặt trước notFound middleware
 app.get('/', (req, res) => {
   res.status(200).json({
     success: true,
     message: 'Chào mừng đến với Poll App!',
-    link: '/api/health'
+    endpoints: {
+      health: '/api/health',
+      auth: '/api/auth',
+      polls: '/api/polls',
+      users: '/api/users',
+      votes: '/api/votes'
+    },
+    timestamp: new Date().toISOString()
   });
 });
 
+// Sử dụng routes chính
+app.use('/api', apiRoutes);
+
+// Middleware xử lý 404 đặt sau tất cả các route
 app.use(notFound);
-
-// Xử lý lỗi toàn cục
+// Middleware xử lý lỗi chung
 app.use(errorHandler);
-
 
 // Khởi động server
 const PORT = config.port;
