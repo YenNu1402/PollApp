@@ -103,3 +103,5 @@ jobs:
           echo "Docker image pushed" >> deployment-report.txt
           echo "Deployed to EC2" >> deployment-report.txt
           echo "Report generated successfully!"
+          cat deployment-report.txt
+          # Optionally, upload the report as an artifact
