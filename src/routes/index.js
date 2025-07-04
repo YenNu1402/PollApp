@@ -3,6 +3,7 @@ import authRoutes from './apis/auth.route.js';
 import pollRoutes from './apis/poll.route.js';
 import userRoutes from './apis/user.route.js'; // Thêm .js và đường dẫn đúng
 import voteRoutes from './apis/vote.route.js'; // Thêm .js và đường dẫn đúng
+import demoRoutes from './apis/demo.route.js'; // Thêm .js và đường dẫn đúng
 
 const router = express.Router();
 
@@ -20,5 +21,6 @@ router.use('/auth', authRoutes);
 router.use('/polls', pollRoutes);
 router.use('/users', userRoutes);
 router.use('/votes', voteRoutes);
+router.use('/demo', demoRoutes); // Thêm route demo
 
 export default router; // Thay thế module.exports = router;

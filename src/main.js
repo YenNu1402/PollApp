@@ -60,7 +60,8 @@ app.get('/', (req, res) => {
       auth: '/api/auth',
       polls: '/api/polls',
       users: '/api/users',
-      votes: '/api/votes'
+      votes: '/api/votes',
+      demo: '/api/demo' // Thêm endpoint demo
     },
     timestamp: new Date().toISOString()
   });
