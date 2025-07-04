@@ -102,3 +102,4 @@ jobs:
           echo "Code quality checks passed" >> deployment-report.txt
           echo "Docker image pushed" >> deployment-report.txt
           echo "Deployed to EC2" >> deployment-report.txt
+          echo "Report generated successfully!"
