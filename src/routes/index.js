@@ -10,7 +10,7 @@ const router = express.Router();
 router.get('/health', (req, res) => {
   res.status(200).json({
     success: true,
-    message: 'Server đang hoạt động',
+    message: 'Server hoạt động',
     timestamp: new Date().toISOString()
   });
 });
