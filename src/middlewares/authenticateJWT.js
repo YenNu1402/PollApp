@@ -59,11 +59,23 @@ export const notFound = (req, res, next) => {
 // Middleware để xử lý lỗi chung
 // Trả về lỗi với status code 500 nếu không có lỗi cụ thể
 export const errorHandler = (err, req, res, next) => {
+  if (res.headersSent) {
+    return next(err);
+  }
   const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+  // Nếu là lỗi 404 thì không trả về stack
+  if (statusCode === 404) {
+    return res.status(404).json({
+      success: false,
+      message: err.message || 'Không tìm thấy'
+    });
+  }
+  // Các lỗi khác
   res.status(statusCode).json({
     success: false,
     message: err.message,
-    stack: process.env.NODE_ENV === 'production' ? null : err.stack
+    // stack: process.env.NODE_ENV === 'production' ? null : err.stack
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
   });
 };
 
