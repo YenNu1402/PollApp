@@ -60,8 +60,7 @@ app.get('/', (req, res) => {
       polls: '/api/polls',
       users: '/api/users',
       votes: '/api/votes'
-    },
-    timestamp: new Date().toISOString()
+    }
   });
 });
 
